@@ -13,17 +13,11 @@
 package jfoucault.mqttaudioswitcher;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -31,12 +25,6 @@ import jfoucault.mqttaudioswitcher.ActionListener.Action;
 import jfoucault.mqttaudioswitcher.Connection.ConnectionStatus;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.logging.LogManager;
 
 
 public class ItemViewClickedListener implements OnItemViewClickedListener {
@@ -81,10 +69,12 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
         if (item instanceof String) {
             if (((String) item).indexOf(context.getString(R.string.headphones_output)) >= 0) {
                 publishHeadphones();
-                //Intent intent = new Intent(context, BrowseErrorActivity.class);
-                //context.startActivity(intent);
             } else if (((String) item).indexOf(context.getString(R.string.speakers_output)) >= 0) {
                 publishSpeakers();
+            } else if (((String) item).indexOf(context.getString(R.string.reconnect_broker)) >= 0) {
+                reconnect();
+            } else if (((String) item).indexOf(context.getString(R.string.disconnect_broker)) >= 0) {
+                disconnect();
             } else {
                 Toast.makeText(context, ((String) item), Toast.LENGTH_SHORT)
                         .show();
@@ -92,6 +82,31 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
         }
     }
 
+
+    /**
+     * Reconnect the selected client
+     */
+    private void reconnect() {
+        Connection c = Connections.getInstance(context).getConnection(clientHandle);
+        if (c != null) {
+            //if the client is not connected, process the disconnect
+            if (c.isConnected()) {
+                return;
+            }
+
+            c.changeConnectionStatus(Connection.ConnectionStatus.CONNECTING);
+
+            try {
+                c.getClient().connect(c.getConnectionOptions(), null, new ActionListener(context, ActionListener.Action.CONNECT, clientHandle, null));
+            } catch (MqttSecurityException e) {
+                Log.e(this.getClass().getCanonicalName(), "Failed to reconnect the client with the handle " + clientHandle, e);
+                c.addAction("Client failed to connect");
+            } catch (MqttException e) {
+                Log.e(this.getClass().getCanonicalName(), "Failed to reconnect the client with the handle " + clientHandle, e);
+                c.addAction("Client failed to connect");
+            }
+        }
+    }
 
 
 
@@ -120,15 +135,15 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
 
 
    private  void publishSpeakers() {
-       String topic = "/audio/switch/to/speakers";
-       String message = "SwitchToSpeakers";
+       String topic = ActivityConstants.defaultSpeakersTopic;
+       String message = ActivityConstants.defaultSpeakersMessage;
        publish(topic, message, 0, false);
    }
 
 
     private  void publishHeadphones() {
-        String topic = "/audio/switch/to/headphones";
-        String message = "SwitchToHeadphones";
+        String topic =  ActivityConstants.defaultHeadphonesTopic;
+        String message = ActivityConstants.defaultHeadphonesMessage;
         publish(topic, message, 0, false);
     }
 

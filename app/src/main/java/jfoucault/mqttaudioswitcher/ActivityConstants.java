@@ -20,8 +20,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 public class ActivityConstants {
 
-  /** Application TAG for logs where class name is not used*/
-  static final String TAG = "MQTT Android";
 
   /*Default values **/
 
@@ -39,8 +37,20 @@ public class ActivityConstants {
   static final MqttMessage defaultLastWill = null;
   /** Default port*/
   static final int defaultPort = 1883;
+  /** Default server*/
+  static final String defaultServer = "88.163.66.219";
+  /** Default clientID*/
+  static final String defaultClientId = "androidTV";
+  /** Default defaultSpeakersTopic*/
+  static final String defaultSpeakersTopic = "/audio/switch/to/speakers";
+  /** Default defaultSpeakersTopic*/
+  static final String defaultSpeakersMessage = "SwitchToSpeakers";
+  /** Default defaultSpeakersTopic*/
+  static final String defaultHeadphonesTopic = "/audio/switch/to/headphones";
+  /** Default defaultSpeakersTopic*/
+  static final String defaultHeadphonesMessage = "SwitchToHeadphones";
 
-  /** Connect Request Code */
+    /** Connect Request Code */
   static final int connect = 0;
   /** Advanced Connect Request Code  **/
   static final int advancedConnect = 1;
@@ -52,9 +62,9 @@ public class ActivityConstants {
   /* Bundle Keys */
 
   /** Server Bundle Key **/
-  static final String server = "192.168.1.9";
+  static final String server = "server";
   /** Port Bundle Key **/
-  static final String port = "1883";
+  static final String port = "port";
   /** ClientID Bundle Key **/
   static final String clientId = "clientId";
   /** Topic Bundle Key **/
@@ -64,9 +74,9 @@ public class ActivityConstants {
   /** Message Bundle Key **/
   static final String message = "message";
   /** Retained Flag Bundle Key **/
-  static final String retained = "false";
+  static final String retained = "retained";
   /** QOS Value Bundle Key **/
-  static final String qos = "0";
+  static final String qos = "qos";
   /** User name Bundle Key **/
   static final String username = "username";
   /** Password Bundle Key **/
@@ -76,13 +86,13 @@ public class ActivityConstants {
   /** Timeout Bundle Key **/
   static final String timeout = "timeout";
   /** SSL Enabled Flag Bundle Key **/
-  static final String ssl = "false";
+  static final String ssl = "ssl";
   /** SSL Key File Bundle Key **/
   static final String ssl_key = "ssl_key";
   /** Connections Bundle Key **/
   static final String connections = "connections";
   /** Clean Session Flag Bundle Key **/
-  static final String cleanSession = "false";
+  static final String cleanSession = "cleanSession";
   /** Action Bundle Key **/
   static final String action = "action";
 

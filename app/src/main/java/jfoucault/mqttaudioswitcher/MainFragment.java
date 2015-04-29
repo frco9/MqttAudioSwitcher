@@ -45,15 +45,12 @@ public class MainFragment extends BrowseFragment {
     private static final int GRID_ITEM_HEIGHT = 200;
 
     private String clientHandle = null;
-    private Context context = null;
-
     private ArrayObjectAdapter mRowsAdapter;
 
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate");
-        context = this.getActivity();
         clientHandle = "androidTVHandle";
 
         super.onActivityCreated(savedInstanceState);
@@ -64,8 +61,6 @@ public class MainFragment extends BrowseFragment {
 
         createConnection();
 
-        connect();
-
         setupEventListeners();
     }
 
@@ -73,12 +68,20 @@ public class MainFragment extends BrowseFragment {
     private void loadRows() {
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
 
+        // Output switcher
         HeaderItem gridHeader = new HeaderItem(0, getString(R.string.switch_output));
-
         GridItemPresenter mGridPresenter = new GridItemPresenter();
         ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(mGridPresenter);
         gridRowAdapter.add(getString(R.string.speakers_output));
         gridRowAdapter.add(getString(R.string.headphones_output));
+        mRowsAdapter.add(new ListRow(gridHeader, gridRowAdapter));
+
+        // Params
+        gridHeader = new HeaderItem(0, getString(R.string.parameters));
+        mGridPresenter = new GridItemPresenter();
+        gridRowAdapter = new ArrayObjectAdapter(mGridPresenter);
+        gridRowAdapter.add(getString(R.string.reconnect_broker));
+        gridRowAdapter.add(getString(R.string.disconnect_broker));
         mRowsAdapter.add(new ListRow(gridHeader, gridRowAdapter));
 
         setAdapter(mRowsAdapter);
@@ -105,14 +108,13 @@ public class MainFragment extends BrowseFragment {
      */
 
         // The basic client information
-        String server = (String) ActivityConstants.server;
-        String clientId = (String) ActivityConstants.clientId;
-        int port = Integer.parseInt((String) ActivityConstants.port);
-        boolean cleanSession = Boolean.parseBoolean(ActivityConstants.cleanSession);
+        String server = ActivityConstants.defaultServer;
+        String clientId = ActivityConstants.defaultClientId;
+        int port = ActivityConstants.defaultPort;
 
-        boolean ssl = Boolean.parseBoolean(ActivityConstants.ssl);
-        String ssl_key = (String) ActivityConstants.ssl_key;
-        String uri = null;
+        boolean ssl = ActivityConstants.defaultSsl;
+        String ssl_key = ActivityConstants.ssl_key;
+        String uri;
         if (ssl) {
             Log.e("SSLConnection", "Doing an SSL Connect");
             uri = "ssl://";
@@ -151,33 +153,28 @@ public class MainFragment extends BrowseFragment {
         // last will message
         String message = ActivityConstants.message;
         String topic = ActivityConstants.topic;
-        Integer qos = Integer.parseInt(ActivityConstants.qos);
-        Boolean retained = Boolean.parseBoolean(ActivityConstants.retained);
+        Integer qos = ActivityConstants.defaultQos;
+        Boolean retained = ActivityConstants.defaultRetained;
 
         // connection options
 
         String username = ActivityConstants.username;
-
         String password = ActivityConstants.password;
 
-        //int timeout = (Integer) data.get(ActivityConstants.timeout);
-        //int keepalive = (Integer) data.get(ActivityConstants.keepalive);
+        int timeout = ActivityConstants.defaultTimeOut;
+        int keepalive = ActivityConstants.defaultKeepAlive;
 
         Connection connection = new Connection(clientHandle, clientId, server, port,
                 this.getActivity(), client, ssl);
 
 
-        //connection.registerChangeListener(changeListener);
-
         // connect client
-
         String[] actionArgs = new String[1];
         actionArgs[0] = clientId;
         connection.changeConnectionStatus(Connection.ConnectionStatus.CONNECTING);
 
-        //conOpt.setCleanSession(cleanSession);
-        //conOpt.setConnectionTimeout(timeout);
-        //conOpt.setKeepAliveInterval(keepalive);
+        conOpt.setConnectionTimeout(timeout);
+        conOpt.setKeepAliveInterval(keepalive);
         if (!username.equals(ActivityConstants.empty)) {
             conOpt.setUserName(username);
         }
@@ -194,8 +191,8 @@ public class MainFragment extends BrowseFragment {
                 || (!topic.equals(ActivityConstants.empty))) {
             // need to make a message since last will is set
             try {
-                conOpt.setWill(topic, message.getBytes(), qos.intValue(),
-                        retained.booleanValue());
+                conOpt.setWill(topic, message.getBytes(), qos,
+                        retained);
             }
             catch (Exception e) {
                 Log.e(this.getClass().getCanonicalName(), "Exception Occured", e);
@@ -223,27 +220,6 @@ public class MainFragment extends BrowseFragment {
 
     }
 
-
-
-    /**
-     * Reconnect the selected client
-     */
-    private void connect() {
-        Connection c = Connections.getInstance(context).getConnection(clientHandle);
-        if (c != null) {
-            c.changeConnectionStatus(Connection.ConnectionStatus.CONNECTING);
-
-            try {
-                c.getClient().connect(c.getConnectionOptions(), null, new ActionListener(context, ActionListener.Action.CONNECT, clientHandle, null));
-            } catch (MqttSecurityException e) {
-                Log.e(this.getClass().getCanonicalName(), "Failed to reconnect the client with the handle " + clientHandle, e);
-                c.addAction("Client failed to connect");
-            } catch (MqttException e) {
-                Log.e(this.getClass().getCanonicalName(), "Failed to reconnect the client with the handle " + clientHandle, e);
-                c.addAction("Client failed to connect");
-            }
-        }
-    }
 
 
     private void setupUIElements() {
