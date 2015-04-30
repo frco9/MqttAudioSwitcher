@@ -71,11 +71,12 @@ public class MainFragment extends BrowseFragment {
         mRowsAdapter.add(new ListRow(gridHeader, gridRowAdapter));
 
         // Params
-        gridHeader = new HeaderItem(0, getString(R.string.parameters));
+        gridHeader = new HeaderItem(0, getString(R.string.settings));
         mGridPresenter = new GridItemPresenter();
         gridRowAdapter = new ArrayObjectAdapter(mGridPresenter);
         gridRowAdapter.add(getString(R.string.reconnect_broker));
         gridRowAdapter.add(getString(R.string.disconnect_broker));
+        gridRowAdapter.add(getString(R.string.change_settings));
         mRowsAdapter.add(new ListRow(gridHeader, gridRowAdapter));
 
         setAdapter(mRowsAdapter);
@@ -111,13 +112,6 @@ public class MainFragment extends BrowseFragment {
 
 
     private void setupUIElements() {
-        // setBadgeDrawable(getActivity().getResources().getDrawable(
-        // R.drawable.videos_by_google_banner));
-        setTitle(getString(R.string.browse_title)); // Badge, when set, takes precedent
-        // over title
-        setHeadersState(HEADERS_ENABLED);
-        setHeadersTransitionOnBackEnabled(true);
-
         // set fastLane (or headers) background color
         setBrandColor(getResources().getColor(R.color.fastlane_background));
     }

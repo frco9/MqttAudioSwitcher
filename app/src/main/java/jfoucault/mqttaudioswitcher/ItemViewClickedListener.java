@@ -13,6 +13,7 @@
 package jfoucault.mqttaudioswitcher;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
@@ -75,6 +76,9 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
                 reconnect();
             } else if (((String) item).indexOf(context.getString(R.string.disconnect_broker)) >= 0) {
                 disconnect();
+            } else if (((String) item).indexOf(context.getString(R.string.change_settings)) >= 0) {
+                Intent intent = new Intent(context, MqttSettingsActivity.class);
+                context.startActivity(intent);
             } else {
                 Toast.makeText(context, ((String) item), Toast.LENGTH_SHORT)
                         .show();

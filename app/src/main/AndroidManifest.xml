@@ -18,8 +18,8 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
         android:banner="@drawable/videos_by_google_banner"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.Leanback" >
 
@@ -38,6 +38,10 @@
 
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".MqttSettingsActivity"
+            android:label="@string/title_activity_mqtt_settings" >
         </activity>
     </application>
 

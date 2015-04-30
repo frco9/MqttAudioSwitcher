@@ -34,7 +34,8 @@
     <string name="headphones_output">Headphone</string>
     <string name="reconnect_broker">Reconnect</string>
     <string name="disconnect_broker">Disconnect</string>
-    <string name="parameters">Parameters</string>
+    <string name="settings">Settings</string>
+    <string name="change_settings">Change settings</string>
 
     <string name="notifyTitle">MQTT Message Received</string>
     <string name="notifyTitle_connectionLost">MQTT Client Has Lost Connection</string>
@@ -51,6 +52,8 @@
     <string name='dateFormat'>dd/MM/yy \'at\' HH:mm:ss</string>
     <string name="timestamp">&lt;br/&gt; &lt;small&gt; %1$s &lt;/small&gt;</string>
 
+    <string name="title_activity_mqtt_settings">Settings</string>
+
 
     <!-- Error messages -->
     <string name="video_error_media_load_timeout">Media loading timed out</string>
@@ -59,4 +62,7 @@
     <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>
     <string name="oops">Oops</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
