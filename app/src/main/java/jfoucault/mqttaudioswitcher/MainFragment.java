@@ -14,8 +14,6 @@
 
 package jfoucault.mqttaudioswitcher;
 
-
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseFragment;
@@ -28,14 +26,10 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 
 public class MainFragment extends BrowseFragment {
@@ -59,7 +53,7 @@ public class MainFragment extends BrowseFragment {
 
         loadRows();
 
-        createConnection();
+        startConnection();
 
         setupEventListeners();
     }
@@ -90,134 +84,28 @@ public class MainFragment extends BrowseFragment {
     /**
      * Create the mqtt connection
      */
-    private void createConnection() {
-        MqttConnectOptions conOpt = new MqttConnectOptions();
-    /*
-     * Mutal Auth connections could do something like this
-     *
-     *
-     * SSLContext context = SSLContext.getDefault();
-     * context.init({new CustomX509KeyManager()},null,null); //where CustomX509KeyManager proxies calls to keychain api
-     * SSLSocketFactory factory = context.getSSLSocketFactory();
-     *
-     * MqttConnectOptions options = new MqttConnectOptions();
-     * options.setSocketFactory(factory);
-     *
-     * client.connect(options);
-     *
-     */
+    private void startConnection() {
+        Connection c = Connection.getInstance(this.getActivity());
+        if (c != null) {
+            if (c.isConnected()) {
+                return;
+            }
 
-        // The basic client information
-        String server = ActivityConstants.defaultServer;
-        String clientId = ActivityConstants.defaultClientId;
-        int port = ActivityConstants.defaultPort;
+            c.changeConnectionStatus(Connection.ConnectionStatus.CONNECTING);
 
-        boolean ssl = ActivityConstants.defaultSsl;
-        String ssl_key = ActivityConstants.ssl_key;
-        String uri;
-        if (ssl) {
-            Log.e("SSLConnection", "Doing an SSL Connect");
-            uri = "ssl://";
-
-        }
-        else {
-            uri = "tcp://";
-        }
-
-        uri = uri + server + ":" + port;
-
-        MqttAndroidClient client;
-        client = Connections.getInstance(this.getActivity()).createClient(this.getActivity(), uri, clientId);
-
-        if (ssl){
             try {
-                if(ssl_key != null && !ssl_key.equalsIgnoreCase(""))
-                {
-                    FileInputStream key = new FileInputStream(ssl_key);
-                    conOpt.setSocketFactory(client.getSSLSocketFactory(key,
-                            "mqtttest"));
-                }
-
+                c.getClient().connect(c.getConnectionOptions(), null, new ActionListener(getActivity(), ActionListener.Action.CONNECT, clientHandle, null));
             } catch (MqttSecurityException e) {
-                Log.e(this.getClass().getCanonicalName(),
-                        "MqttException Occured: ", e);
-            } catch (FileNotFoundException e) {
-                Log.e(this.getClass().getCanonicalName(),
-                        "MqttException Occured: SSL Key file not found", e);
+                Log.e(this.getClass().getCanonicalName(), "Failed to connect the client with the handle " + clientHandle, e);
+                c.addAction("Client failed to connect");
+            } catch (MqttException e) {
+                Log.e(this.getClass().getCanonicalName(), "Failed to connect the client with the handle " + clientHandle, e);
+                c.addAction("Client failed to connect");
             }
+        } else {
+            String actionTaken = getString(R.string.toast_no_connection);
+            Notify.toast(getActivity(), actionTaken, Toast.LENGTH_SHORT);
         }
-
-        // create a client handle
-        clientHandle = uri + clientId;
-
-        // last will message
-        String message = ActivityConstants.message;
-        String topic = ActivityConstants.topic;
-        Integer qos = ActivityConstants.defaultQos;
-        Boolean retained = ActivityConstants.defaultRetained;
-
-        // connection options
-
-        String username = ActivityConstants.username;
-        String password = ActivityConstants.password;
-
-        int timeout = ActivityConstants.defaultTimeOut;
-        int keepalive = ActivityConstants.defaultKeepAlive;
-
-        Connection connection = new Connection(clientHandle, clientId, server, port,
-                this.getActivity(), client, ssl);
-
-
-        // connect client
-        String[] actionArgs = new String[1];
-        actionArgs[0] = clientId;
-        connection.changeConnectionStatus(Connection.ConnectionStatus.CONNECTING);
-
-        conOpt.setConnectionTimeout(timeout);
-        conOpt.setKeepAliveInterval(keepalive);
-        if (!username.equals(ActivityConstants.empty)) {
-            conOpt.setUserName(username);
-        }
-        if (!password.equals(ActivityConstants.empty)) {
-            conOpt.setPassword(password.toCharArray());
-        }
-
-        final ActionListener callback = new ActionListener(this.getActivity(),
-                ActionListener.Action.CONNECT, clientHandle, actionArgs);
-
-        boolean doConnect = true;
-
-        if ((!message.equals(ActivityConstants.empty))
-                || (!topic.equals(ActivityConstants.empty))) {
-            // need to make a message since last will is set
-            try {
-                conOpt.setWill(topic, message.getBytes(), qos,
-                        retained);
-            }
-            catch (Exception e) {
-                Log.e(this.getClass().getCanonicalName(), "Exception Occured", e);
-                doConnect = false;
-                callback.onFailure(null, e);
-            }
-        }
-        client.setCallback(new MqttCallbackHandler(this.getActivity(), clientHandle));
-
-
-        //set traceCallback
-        client.setTraceCallback(new MqttTraceCallback());
-
-        connection.addConnectionOptions(conOpt);
-        Connections.getInstance(this.getActivity()).addConnection(connection);
-        if (doConnect) {
-            try {
-                client.connect(conOpt, null, callback);
-            }
-            catch (MqttException e) {
-                Log.e(this.getClass().getCanonicalName(),
-                        "MqttException Occured", e);
-            }
-        }
-
     }
 
 

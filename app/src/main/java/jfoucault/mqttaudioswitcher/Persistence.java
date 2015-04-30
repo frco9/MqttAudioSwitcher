@@ -22,13 +22,11 @@ import android.provider.BaseColumns;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <code>Persistence</code> deals with interacting with the database to persist
  * {@link Connection} objects so created clients survive, the destruction of the 
- * singleton {@link Connections} object.
+ * singleton {@link Connection} object.
  *
  */
 public class Persistence extends SQLiteOpenHelper implements BaseColumns {
@@ -190,12 +188,11 @@ public class Persistence extends SQLiteOpenHelper implements BaseColumns {
   }
 
   /**
-   * Recreates connection objects based upon information stored in the database
-   * @param context Context for creating {@link Connection} objects
-   * @return list of connections that have been restored
+   * Recreates connection object based upon information stored in the database
+   * @return connection data that have been restored
    * @throws PersistenceException if restoring connections fails, this is thrown
    */
-  public List<Connection> restoreConnections(Context context) throws PersistenceException
+  public ConnectionDBData restoreConnections() throws PersistenceException
   {
     //columns to return
     String[] connectionColumns = {
@@ -220,62 +217,57 @@ public class Persistence extends SQLiteOpenHelper implements BaseColumns {
     String sort = COLUMN_HOST;
 
     SQLiteDatabase db = getReadableDatabase();
-
+    ConnectionDBData connectionDBData = null;
     Cursor c = db.query(TABLE_CONNECTIONS, connectionColumns, null, null, null, null, sort);
-    ArrayList<Connection> list = new ArrayList<Connection>(c.getCount());
-    Connection connection = null;
-    for (int i = 0; i < c.getCount(); i++) {
-      if (!c.moveToNext()) { //move to the next item throw persistence exception, if it fails
-        throw new PersistenceException("Failed restoring connection - count: " + c.getCount() + "loop iteration: " + i);
-      }
-      //get data from cursor
-      Long id = c.getLong(c.getColumnIndexOrThrow(_ID));
-      //basic client information
-      String host = c.getString(c.getColumnIndexOrThrow(COLUMN_HOST));
-      String clientID = c.getString(c.getColumnIndexOrThrow(COLUMN_client_ID));
-      int port = c.getInt(c.getColumnIndexOrThrow(COLUMN_port));
 
-      //connect options strings
-      String username = c.getString(c.getColumnIndexOrThrow(COLUMN_USER_NAME));
-      String password = c.getString(c.getColumnIndexOrThrow(COLUMN_PASSWORD));
-      String topic = c.getString(c.getColumnIndexOrThrow(COLUMN_TOPIC));
-      String message = c.getString(c.getColumnIndexOrThrow(COLUMN_MESSAGE));
-
-      //connect options integers
-      int qos = c.getInt(c.getColumnIndexOrThrow(COLUMN_QOS));
-      int keepAlive = c.getInt(c.getColumnIndexOrThrow(COLUMN_KEEP_ALIVE));
-      int timeout = c.getInt(c.getColumnIndexOrThrow(COLUMN_TIME_OUT));
-
-      //get all values that need converting and convert integers to booleans in line using "condition ? trueValue : falseValue"
-      boolean cleanSession = c.getInt(c.getColumnIndexOrThrow(COLUMN_CLEAN_SESSION)) == 1 ? true : false;
-      boolean retained = c.getInt(c.getColumnIndexOrThrow(COLUMN_RETAINED)) == 1 ? true : false;
-      boolean ssl = c.getInt(c.getColumnIndexOrThrow(COLUMN_ssl)) == 1 ? true : false;
-
-      //rebuild objects starting with the connect options
-      MqttConnectOptions opts = new MqttConnectOptions();
-      opts.setCleanSession(cleanSession);
-      opts.setKeepAliveInterval(keepAlive);
-      opts.setConnectionTimeout(timeout);
-
-      opts.setPassword(password != null ? password.toCharArray() : null);
-      opts.setUserName(username);
-
-      if (topic != null) {
-        opts.setWill(topic, message.getBytes(), qos, retained);
-      }
-
-      //now create the connection object
-      connection = Connection.createConnection(clientID, host, port, context, ssl);
-      connection.addConnectionOptions(opts);
-      connection.assignPersistenceId(id);
-      //store it in the list
-      list.add(connection);
-
+    if (c.getCount() <= 0) {
+        return null;
     }
+    if (!c.moveToNext()) { //move to the next item throw persistence exception, if it fails
+    throw new PersistenceException("Failed restoring connection - count: " + c.getCount());
+    }
+    //get data from cursor
+    Long id = c.getLong(c.getColumnIndexOrThrow(_ID));
+    //basic client information
+    String host = c.getString(c.getColumnIndexOrThrow(COLUMN_HOST));
+    String clientID = c.getString(c.getColumnIndexOrThrow(COLUMN_client_ID));
+    int port = c.getInt(c.getColumnIndexOrThrow(COLUMN_port));
+
+    //connect options strings
+    String username = c.getString(c.getColumnIndexOrThrow(COLUMN_USER_NAME));
+    String password = c.getString(c.getColumnIndexOrThrow(COLUMN_PASSWORD));
+    String topic = c.getString(c.getColumnIndexOrThrow(COLUMN_TOPIC));
+    String message = c.getString(c.getColumnIndexOrThrow(COLUMN_MESSAGE));
+
+    //connect options integers
+    int qos = c.getInt(c.getColumnIndexOrThrow(COLUMN_QOS));
+    int keepAlive = c.getInt(c.getColumnIndexOrThrow(COLUMN_KEEP_ALIVE));
+    int timeout = c.getInt(c.getColumnIndexOrThrow(COLUMN_TIME_OUT));
+
+    //get all values that need converting and convert integers to booleans in line using "condition ? trueValue : falseValue"
+    boolean cleanSession = c.getInt(c.getColumnIndexOrThrow(COLUMN_CLEAN_SESSION)) == 1 ? true : false;
+    boolean retained = c.getInt(c.getColumnIndexOrThrow(COLUMN_RETAINED)) == 1 ? true : false;
+    boolean ssl = c.getInt(c.getColumnIndexOrThrow(COLUMN_ssl)) == 1 ? true : false;
+
+    //rebuild objects starting with the connect options
+    MqttConnectOptions opts = new MqttConnectOptions();
+    opts.setCleanSession(cleanSession);
+    opts.setKeepAliveInterval(keepAlive);
+    opts.setConnectionTimeout(timeout);
+
+    opts.setPassword(password != null ? password.toCharArray() : null);
+    opts.setUserName(username);
+
+    if (topic != null) {
+    opts.setWill(topic, message.getBytes(), qos, retained);
+    }
+
+    connectionDBData = new ConnectionDBData(clientID, host, port, ssl, opts, id);
+
     //close the cursor now we are finished with it
     c.close();
     db.close();
-    return list;
+    return connectionDBData;
 
   }
 

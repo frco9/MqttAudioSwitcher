@@ -49,7 +49,7 @@ public class MqttCallbackHandler implements MqttCallback {
   public void connectionLost(Throwable cause) {
 //	  cause.printStackTrace();
     if (cause != null) {
-      Connection c = Connections.getInstance(context).getConnection(clientHandle);
+      Connection c = Connection.getInstance(context);
       c.addAction("Connection Lost");
       c.changeConnectionStatus(ConnectionStatus.DISCONNECTED);
 
@@ -77,7 +77,7 @@ public class MqttCallbackHandler implements MqttCallback {
   public void messageArrived(String topic, MqttMessage message) throws Exception {
 
     //Get connection object associated with this object
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
 
     //create arguments to format message arrived notifcation string
     String[] args = new String[2];

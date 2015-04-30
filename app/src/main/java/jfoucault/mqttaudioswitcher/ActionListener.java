@@ -102,7 +102,7 @@ class ActionListener implements IMqttActionListener {
    */
   private void publish() {
 
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
     String actionTaken = context.getString(R.string.toast_pub_success,
             (Object[]) additionalArgs);
     c.addAction(actionTaken);
@@ -116,7 +116,7 @@ class ActionListener implements IMqttActionListener {
    * then notify the user of success.
    */
   private void disconnect() {
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(ConnectionStatus.DISCONNECTED);
     String actionTaken = context.getString(R.string.toast_disconnected);
     c.addAction(actionTaken);
@@ -130,7 +130,7 @@ class ActionListener implements IMqttActionListener {
    */
   private void connect() {
 
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(Connection.ConnectionStatus.CONNECTED);
     c.addAction("Client Connected");
 
@@ -167,7 +167,7 @@ class ActionListener implements IMqttActionListener {
    *            This argument is not used
    */
   private void publish(Throwable exception) {
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
     String action = context.getString(R.string.toast_pub_failed,
             (Object[]) additionalArgs);
     c.addAction(action);
@@ -181,7 +181,7 @@ class ActionListener implements IMqttActionListener {
    * @param exception This argument is not used
    */
   private void disconnect(Throwable exception) {
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(ConnectionStatus.DISCONNECTED);
     c.addAction("Disconnect Failed - an error occured");
 
@@ -192,7 +192,7 @@ class ActionListener implements IMqttActionListener {
    * @param exception This argument is not used
    */
   private void connect(Throwable exception) {
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(Connection.ConnectionStatus.ERROR);
     c.addAction("Client failed to connect");
 

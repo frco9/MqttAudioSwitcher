@@ -87,7 +87,7 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
      * Reconnect the selected client
      */
     private void reconnect() {
-        Connection c = Connections.getInstance(context).getConnection(clientHandle);
+        Connection c = Connection.getInstance(context);
         if (c != null) {
             //if the client is not connected, process the disconnect
             if (c.isConnected()) {
@@ -115,7 +115,7 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
    */
   private void disconnect() {
 
-    Connection c = Connections.getInstance(context).getConnection(clientHandle);
+    Connection c = Connection.getInstance(context);
 
     //if the client is not connected, process the disconnect
     if (!c.isConnected()) {
@@ -158,7 +158,7 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
     args[1] = topic+";qos:"+qos+";retained:"+retained;
 
     try {
-      Connections.getInstance(context).getConnection(clientHandle).getClient()
+      Connection.getInstance(context).getClient()
           .publish(topic, message.getBytes(), qos, retained, null, new ActionListener(context, Action.PUBLISH, clientHandle, args));
     }
     catch (MqttSecurityException e) {

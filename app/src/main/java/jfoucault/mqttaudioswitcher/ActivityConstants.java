@@ -46,7 +46,7 @@ public class ActivityConstants {
   /** Default defaultSpeakersTopic*/
   static final String defaultSpeakersMessage = "SwitchToSpeakers";
   /** Default defaultSpeakersTopic*/
-  static final String defaultHeadphonesTopic = "/audio/switch/to/headphones";
+      static final String defaultHeadphonesTopic = "/audio/switch/to/headphones";
   /** Default defaultSpeakersTopic*/
   static final String defaultHeadphonesMessage = "SwitchToHeadphones";
 
@@ -89,8 +89,6 @@ public class ActivityConstants {
   static final String ssl = "ssl";
   /** SSL Key File Bundle Key **/
   static final String ssl_key = "ssl_key";
-  /** Connections Bundle Key **/
-  static final String connections = "connections";
   /** Clean Session Flag Bundle Key **/
   static final String cleanSession = "cleanSession";
   /** Action Bundle Key **/

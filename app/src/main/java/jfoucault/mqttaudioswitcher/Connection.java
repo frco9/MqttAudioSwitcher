@@ -32,6 +32,12 @@ import java.util.Date;
  */
 public class Connection {
 
+  /** Singleton instance of <code>Connection</code>**/
+  private static Connection instance = null;
+
+  /** {@link Persistence} object used to save, delete and restore connections**/
+  private Persistence persistence = null;
+
   /*
    * Basic Information about the client
    */
@@ -66,7 +72,7 @@ public class Connection {
   private long persistenceId = -1;
 
   /**
-   * Connections status for  a connection
+   * Connection status for  a connection
    */
   enum ConnectionStatus {
 
@@ -84,32 +90,62 @@ public class Connection {
     NONE
   }
 
-  /**
-   * Creates a connection from persisted information in the database store, attempting
-   * to create a {@link MqttAndroidClient} and the client handle.
-   * @param clientId The id of the client
-   * @param host the server which the client is connecting to
-   * @param port the port on the server which the client will attempt to connect to
-   * @param context the application context
-   * @param sslConnection true if the connection is secured by SSL
-   * @return a new instance of <code>Connection</code>
-   */
-  public static Connection createConnection(String clientId, String host,
-      int port, Context context, boolean sslConnection) {
-    String handle = null;
-    String uri = null;
-    if (sslConnection) {
-      uri = "ssl://" + host + ":" + port;
-      handle = uri + clientId;
-    }
-    else {
-      uri = "tcp://" + host + ":" + port;
-      handle = uri + clientId;
-    }
-    MqttAndroidClient client = new MqttAndroidClient(context, uri, clientId);
-    return new Connection(handle, clientId, host, port, context, client, sslConnection);
 
-  }
+    /**
+     * Returns an already initialised instance of <code>Connection</code>, if Connection has yet to be created, it will
+     * create and return that instance
+     * @param context The applications context used to create the <code>Connection</code> object if it is not already initialised
+     * @return Connection instance
+     */
+    public synchronized static Connection getInstance(Context context)
+    {
+        if (instance == null) {
+            instance = createConnection(context);
+        }
+
+        return instance;
+    }
+
+    /**
+     * Creates a connection from persisted information in the database store
+     * @param context the application context
+     * @return a new instance of <code>Connection</code>
+     */
+    public static Connection createConnection(Context context) {
+        //attempt to restore state
+        Persistence persistence = new Persistence(context);
+        Connection connection = null;
+        try {
+            ConnectionDBData data = persistence.restoreConnections();
+            // No connection saved
+            if (data == null ) {
+                return null;
+            }
+
+            String handle = null;
+            String uri = null;
+            String clientID = data.getClientID();
+            String host = data.getHost();
+            String port = Integer.toString(data.getPort());
+            Boolean sslConnection = data.getSsl();
+            if (sslConnection) {
+                uri = "ssl://" + host + ":" + port;
+                handle = uri + clientID;
+            }
+            else {
+                uri = "tcp://" + host + ":" + port;
+                handle = uri + clientID;
+            }
+            MqttAndroidClient client = new MqttAndroidClient(context, uri, clientID);
+            connection = new Connection(handle, clientID, host, data.getPort(), context, client, sslConnection, persistence);
+            connection.addConnectionOptions(data.getOpts());
+            connection.assignPersistenceId(data.getId());
+        }
+        catch (PersistenceException e) {
+            e.printStackTrace();
+        }
+        return connection;
+    }
 
   /**
    * Creates a connection object with the server information and the client
@@ -123,7 +159,7 @@ public class Connection {
    * @param sslConnection true if the connection is secured by SSL
    */
   public Connection(String clientHandle, String clientId, String host,
-      int port, Context context, MqttAndroidClient client, boolean sslConnection) {
+      int port, Context context, MqttAndroidClient client, boolean sslConnection, Persistence persistence) {
     //generate the client handle from its hash code
     this.clientHandle = clientHandle;
     this.clientId = clientId;
@@ -132,6 +168,7 @@ public class Connection {
     this.context = context;
     this.client = client;
     this.sslConnection = sslConnection;
+    this.persistence = persistence;
     history = new ArrayList<String>();
     StringBuffer sb = new StringBuffer();
     sb.append("Client: ");
@@ -310,6 +347,14 @@ public class Connection {
     }
   }
 
+    /**
+     * Removes a connection from the map of connections
+     * @param connection connection to be removed
+     */
+    public void removeConnection(Connection connection) {
+        persistence.deleteConnection(connection);
+    }
+
   /**
    * Notify {@link PropertyChangeListener} objects that the object has been updated
    * @param propertyChangeEvent 
@@ -353,4 +398,29 @@ public class Connection {
   public long persistenceId() {
     return persistenceId;
   }
+}
+
+class ConnectionDBData {
+    private String clientID;
+    private String host;
+    private int port;
+    private boolean ssl;
+    private MqttConnectOptions opts;
+    private Long id;
+
+    public ConnectionDBData(String clientID, String host, int port, boolean ssl, MqttConnectOptions opts, Long id) {
+        this.clientID = clientID;
+        this.host = host;
+        this.port = port;
+        this.ssl = ssl;
+        this.opts = opts;
+        this.id = id;
+    }
+
+    public String getClientID() { return clientID; }
+    public String getHost() { return host; }
+    public int getPort() { return port; }
+    public boolean getSsl() { return ssl; }
+    public MqttConnectOptions getOpts() { return opts; }
+    public Long getId () { return id; }
 }
