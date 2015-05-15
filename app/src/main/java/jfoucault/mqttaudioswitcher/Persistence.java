@@ -137,54 +137,87 @@ public class Persistence extends SQLiteOpenHelper implements BaseColumns {
   }
 
   /**
-   * Persist a Connection to the database
+   * Update a Connection to the database
    * @param connection the connection to persist
    * @throws PersistenceException If storing the data fails
    */
-  public void persistConnection(Connection connection) throws PersistenceException {
+  public void updateConnection(Connection connection) throws PersistenceException {
+      ConnectionDBData data = new ConnectionDBData(connection.getId(), connection.getHostName(), connection.getPort(), (connection.isSSL() != 0), connection.getConnectionOptions(), connection.persistenceId());
+      SQLiteDatabase db = getWritableDatabase();
+      ContentValues values = prepareDataForPersistance(data);
 
-    MqttConnectOptions conOpts = connection.getConnectionOptions();
-    MqttMessage lastWill = conOpts.getWillMessage();
-    SQLiteDatabase db = getWritableDatabase();
-    ContentValues values = new ContentValues();
+      int didUpdate = db.update(TABLE_CONNECTIONS, values, _ID + "=?", new String[]{String.valueOf(connection.persistenceId())});
+      if (didUpdate <= 0) {
+          throw new PersistenceException("Failed to update connection: " + connection.handle());
+      }
+  }
 
-    //put the column values object 
+  /**
+   * Persist a Connection to the database
+   * @param data the connection to persist
+   * @throws PersistenceException If storing the data fails
+   */
+  public void persistConnection(ConnectionDBData data) throws PersistenceException {
+      if (data.getOpts() == null) {
+          data.setOpts(new MqttConnectOptions());
+      }
+      if (data.getId() != null) {
+          throw new PersistenceException("Failed to persist connection");
+      }
 
-    values.put(COLUMN_HOST, connection.getHostName());
-    values.put(COLUMN_port, connection.getPort());
-    values.put(COLUMN_client_ID, connection.getId());
-    values.put(COLUMN_ssl, connection.isSSL());
+      SQLiteDatabase db = getWritableDatabase();
+      ContentValues values = prepareDataForPersistance(data);
 
-    values.put(COLUMN_KEEP_ALIVE, conOpts.getKeepAliveInterval());
-    values.put(COLUMN_TIME_OUT, conOpts.getConnectionTimeout());
-    values.put(COLUMN_USER_NAME, conOpts.getUserName());
-    values.put(COLUMN_TOPIC, conOpts.getWillDestination());
+      //insert the values into the tables, returns the ID for the row
+      long newRowId = db.insert(TABLE_CONNECTIONS, null, values);
 
-    //uses "condition ? trueValue: falseValue" for in line converting of values 
-    char[] password = conOpts.getPassword();
-    values.put(COLUMN_CLEAN_SESSION, conOpts.isCleanSession() ? 1 : 0); //convert boolean to int and then put in values
-    values.put(COLUMN_PASSWORD, password != null ? String.valueOf(password) : null); //convert char[] to String
-    values.put(COLUMN_MESSAGE, lastWill != null ? new String(lastWill.getPayload()) : null); // convert byte[] to string
-    values.put(COLUMN_QOS, lastWill != null ? lastWill.getQos() : 0);
+      db.close(); //close the db then deal with the result of the query
 
-    if (lastWill == null) {
-      values.put(COLUMN_RETAINED, 0);
-    }
-    else {
-      values.put(COLUMN_RETAINED, lastWill.isRetained() ? 1 : 0); //convert from boolean to int
-    }
+      if (newRowId == -1) {
+          throw new PersistenceException("Failed to persist connection");
+      }
+      else { //Successfully persisted assigning persistenceID
+          data.setId(newRowId);
+      }
+  }
 
-    //insert the values into the tables, returns the ID for the row
-    long newRowId = db.insert(TABLE_CONNECTIONS, null, values);
 
-    db.close(); //close the db then deal with the result of the query 
+  /**
+   * Prepare data for persistance to the database
+   * @param data the connection data to persist
+   * @return values the values to store
+   */
+  private ContentValues prepareDataForPersistance(ConnectionDBData data) throws PersistenceException {
+      MqttConnectOptions conOpts = data.getOpts();
+      MqttMessage lastWill = conOpts.getWillMessage();
+      ContentValues values = new ContentValues();
 
-    if (newRowId == -1) {
-      throw new PersistenceException("Failed to persist connection: " + connection.handle());
-    }
-    else { //Successfully persisted assigning persistecneID
-      connection.assignPersistenceId(newRowId);
-    }
+      //put the column values object
+
+      values.put(COLUMN_HOST, data.getHost());
+      values.put(COLUMN_port, data.getPort());
+      values.put(COLUMN_client_ID, data.getClientID());
+      values.put(COLUMN_ssl, data.getSsl());
+
+      values.put(COLUMN_KEEP_ALIVE, conOpts.getKeepAliveInterval());
+      values.put(COLUMN_TIME_OUT, conOpts.getConnectionTimeout());
+      values.put(COLUMN_USER_NAME, conOpts.getUserName());
+      values.put(COLUMN_TOPIC, conOpts.getWillDestination());
+
+      //uses "condition ? trueValue: falseValue" for in line converting of values
+      char[] password = conOpts.getPassword();
+      values.put(COLUMN_CLEAN_SESSION, conOpts.isCleanSession() ? 1 : 0); //convert boolean to int and then put in values
+      values.put(COLUMN_PASSWORD, password != null ? String.valueOf(password) : null); //convert char[] to String
+      values.put(COLUMN_MESSAGE, lastWill != null ? new String(lastWill.getPayload()) : null); // convert byte[] to string
+      values.put(COLUMN_QOS, lastWill != null ? lastWill.getQos() : 0);
+
+      if (lastWill == null) {
+          values.put(COLUMN_RETAINED, 0);
+      }
+      else {
+          values.put(COLUMN_RETAINED, lastWill.isRetained() ? 1 : 0); //convert from boolean to int
+      }
+      return values;
   }
 
   /**

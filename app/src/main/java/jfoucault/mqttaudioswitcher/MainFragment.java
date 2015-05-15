@@ -25,6 +25,7 @@ import android.support.v17.leanback.widget.Presenter;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,15 +65,15 @@ public class MainFragment extends BrowseFragment {
 
         // Output switcher
         HeaderItem gridHeader = new HeaderItem(0, getString(R.string.switch_output));
-        GridItemPresenter mGridPresenter = new GridItemPresenter();
-        ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(mGridPresenter);
-        gridRowAdapter.add(getString(R.string.speakers_output));
-        gridRowAdapter.add(getString(R.string.headphones_output));
+        GridIconItemPresenter mGridIconPresenter = new GridIconItemPresenter();
+        ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(mGridIconPresenter);
+        gridRowAdapter.add(R.drawable.ic_speakers);
+        gridRowAdapter.add(R.drawable.ic_headphone4);
         mRowsAdapter.add(new ListRow(gridHeader, gridRowAdapter));
 
         // Params
         gridHeader = new HeaderItem(0, getString(R.string.settings));
-        mGridPresenter = new GridItemPresenter();
+        GridItemPresenter mGridPresenter = new GridItemPresenter();
         gridRowAdapter = new ArrayObjectAdapter(mGridPresenter);
         gridRowAdapter.add(getString(R.string.reconnect_broker));
         gridRowAdapter.add(getString(R.string.disconnect_broker));
@@ -144,4 +145,24 @@ public class MainFragment extends BrowseFragment {
         }
     }
 
+    private class GridIconItemPresenter extends Presenter {
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent) {
+            ImageView view = new ImageView(parent.getContext());
+            view.setLayoutParams(new ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT));
+            view.setFocusable(true);
+            view.setFocusableInTouchMode(true);
+            view.setBackgroundColor(getResources().getColor(R.color.default_background));
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder viewHolder, Object item) {
+            ((ImageView) viewHolder.view).setImageResource((int) item);
+        }
+
+        @Override
+        public void onUnbindViewHolder(ViewHolder viewHolder) {
+        }
+    }
 }

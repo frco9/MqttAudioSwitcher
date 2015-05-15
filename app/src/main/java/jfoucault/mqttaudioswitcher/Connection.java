@@ -347,12 +347,41 @@ public class Connection {
     }
   }
 
+
     /**
-     * Removes a connection from the map of connections
-     * @param connection connection to be removed
+     * Removes connection from persistence
      */
-    public void removeConnection(Connection connection) {
-        persistence.deleteConnection(connection);
+    public void updateConnection(ConnectionDBData data) {
+        this.clientId = data.getClientID();
+        this.host = data.getHost();
+        this.port = data.getPort();
+        String handle;
+        String uri;
+
+        if (sslConnection) {
+            uri = "ssl://" + host + ":" + port;
+            handle = uri + clientId;
+        }
+        else {
+            uri = "tcp://" + host + ":" + port;
+            handle = uri + clientId;
+        }
+        this.clientHandle = handle;
+        this.client = new MqttAndroidClient(context, uri, clientId);
+        try {
+            persistence.updateConnection(this);
+        }
+        catch (PersistenceException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Removes connection from persistence
+     */
+    public void removeConnection() {
+        persistence.deleteConnection(this);
     }
 
   /**
@@ -423,4 +452,7 @@ class ConnectionDBData {
     public boolean getSsl() { return ssl; }
     public MqttConnectOptions getOpts() { return opts; }
     public Long getId () { return id; }
+
+    public void setId(Long id) {this.id = id;}
+    public void setOpts(MqttConnectOptions opts) {this.opts = opts;}
 }

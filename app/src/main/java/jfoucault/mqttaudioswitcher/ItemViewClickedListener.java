@@ -68,11 +68,7 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
             getActivity().startActivity(intent, bundle);
         } else */
         if (item instanceof String) {
-            if (((String) item).indexOf(context.getString(R.string.headphones_output)) >= 0) {
-                publishHeadphones();
-            } else if (((String) item).indexOf(context.getString(R.string.speakers_output)) >= 0) {
-                publishSpeakers();
-            } else if (((String) item).indexOf(context.getString(R.string.reconnect_broker)) >= 0) {
+            if (((String) item).indexOf(context.getString(R.string.reconnect_broker)) >= 0) {
                 reconnect();
             } else if (((String) item).indexOf(context.getString(R.string.disconnect_broker)) >= 0) {
                 disconnect();
@@ -82,6 +78,12 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
             } else {
                 Toast.makeText(context, ((String) item), Toast.LENGTH_SHORT)
                         .show();
+            }
+        } else {
+            if (((int) item) == R.drawable.ic_headphone4) {
+                publishHeadphones();
+            } else if (((int) item) == R.drawable.ic_speakers) {
+                publishSpeakers();
             }
         }
     }
@@ -93,8 +95,9 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
     private void reconnect() {
         Connection c = Connection.getInstance(context);
         if (c != null) {
-            //if the client is not connected, process the disconnect
+            //if the client is connected, process connect
             if (c.isConnected()) {
+                Notify.toast(context, "Client already connected", Toast.LENGTH_SHORT);
                 return;
             }
 
@@ -123,7 +126,8 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
 
     //if the client is not connected, process the disconnect
     if (!c.isConnected()) {
-      return;
+        Notify.toast(context, "Client already disconnected", Toast.LENGTH_SHORT);
+        return;
     }
 
     try {
@@ -162,8 +166,11 @@ public class ItemViewClickedListener implements OnItemViewClickedListener {
     args[1] = topic+";qos:"+qos+";retained:"+retained;
 
     try {
-      Connection.getInstance(context).getClient()
-          .publish(topic, message.getBytes(), qos, retained, null, new ActionListener(context, Action.PUBLISH, clientHandle, args));
+      Connection c = Connection.getInstance(context);
+      if (c != null) {
+          c.getClient()
+           .publish(topic, message.getBytes(), qos, retained, null, new ActionListener(context, Action.PUBLISH, clientHandle, args));
+      }
     }
     catch (MqttSecurityException e) {
       Log.e(this.getClass().getCanonicalName(), "Failed to publish a message from the client with the handle " + clientHandle, e);

@@ -28,6 +28,10 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Connection connection = Connection.getInstance(this);
+        if (connection == null) {
+            MqttNewConnectionActivity.startActivity(this);
+        }
         setContentView(R.layout.activity_main);
     }
 }

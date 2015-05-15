@@ -120,7 +120,7 @@ class ActionListener implements IMqttActionListener {
     c.changeConnectionStatus(ConnectionStatus.DISCONNECTED);
     String actionTaken = context.getString(R.string.toast_disconnected);
     c.addAction(actionTaken);
-
+    Notify.toast(context, actionTaken, Toast.LENGTH_SHORT);
   }
 
   /**
@@ -132,8 +132,9 @@ class ActionListener implements IMqttActionListener {
 
     Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(Connection.ConnectionStatus.CONNECTED);
-    c.addAction("Client Connected");
-
+    String action = "Client Connected";
+    c.addAction(action);
+    Notify.toast(context, action, Toast.LENGTH_SHORT);
   }
 
   /**
@@ -183,8 +184,9 @@ class ActionListener implements IMqttActionListener {
   private void disconnect(Throwable exception) {
     Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(ConnectionStatus.DISCONNECTED);
-    c.addAction("Disconnect Failed - an error occured");
-
+    String action = "Disconnect Failed - an error occured";
+    c.addAction(action);
+    Notify.toast(context, action, Toast.LENGTH_SHORT);
   }
 
   /**
@@ -194,8 +196,9 @@ class ActionListener implements IMqttActionListener {
   private void connect(Throwable exception) {
     Connection c = Connection.getInstance(context);
     c.changeConnectionStatus(Connection.ConnectionStatus.ERROR);
-    c.addAction("Client failed to connect");
-
+    String action = "Client failed to connect";
+    c.addAction(action);
+    Notify.toast(context, action, Toast.LENGTH_SHORT);
   }
 
 }

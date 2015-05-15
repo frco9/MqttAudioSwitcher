@@ -38,7 +38,7 @@ public class ActivityConstants {
   /** Default port*/
   static final int defaultPort = 1883;
   /** Default server*/
-  static final String defaultServer = "88.163.66.219";
+  static final String defaultServer = "localhost";
   /** Default clientID*/
   static final String defaultClientId = "androidTV";
   /** Default defaultSpeakersTopic*/

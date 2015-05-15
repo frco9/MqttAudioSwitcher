@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout style="?attr/guidanceContainerStyle">
+
+        <ImageView
+            android:id="@+id/guidance_icon"
+            style="?attr/guidanceIconStyle"
+            tools:ignore="ContentDescription"/>
+
+        <TextView
+            android:id="@+id/guidance_title"
+            android:layout_toStartOf="@id/guidance_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignWithParentIfMissing="true"
+            android:layout_centerVertical="true"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-light"
+            android:gravity="end"
+            android:maxLines="2"
+            android:paddingBottom="4dp"
+            android:paddingTop="2dp"
+            android:textColor="#FFF1F1F1"
+            android:textSize="36sp"/>
+
+
+        <TextView
+            android:id="@+id/guidance_breadcrumb"
+            style="?attr/guidanceBreadcrumbStyle"/>
+
+
+        <TextView
+            android:id="@+id/guidance_description"
+            style="?attr/guidanceDescriptionStyle" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@+id/guidance_description"
+            android:layout_toStartOf="@id/guidance_icon"
+            android:layout_alignLeft="@+id/guidance_description"
+            android:orientation="vertical">
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/TextViewClientID"
+                    style="?attr/guidanceDescriptionStyle"
+                    android:text="@string/form_clientId"
+                    android:layout_marginRight="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                </TextView>
+
+                <EditText
+                    android:id="@+id/EditTextClientID"
+                    style="?attr/guidanceDescriptionStyle"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/formHint_clientId"
+                    android:focusable="true"
+                    android:inputType="textPersonName"
+                    android:layout_width="wrap_content">
+                </EditText>
+            </LinearLayout>
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/TextViewHost"
+                    style="?attr/guidanceDescriptionStyle"
+                    android:text="@string/form_host"
+                    android:layout_marginRight="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                </TextView>
+
+                <EditText
+                    android:id="@+id/EditTextHost"
+                    style="?attr/guidanceDescriptionStyle"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/formHint_host"
+                    android:focusable="true"
+                    android:inputType="textPersonName"
+                    android:layout_width="wrap_content">
+                </EditText>
+            </LinearLayout>
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/TextViewPort"
+                    style="?attr/guidanceDescriptionStyle"
+                    android:text="@string/form_port"
+                    android:layout_marginRight="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                </TextView>
+
+                <EditText
+                    android:id="@+id/EditTextPort"
+                    style="?attr/guidanceDescriptionStyle"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/formHint_port"
+                    android:focusable="true"
+                    android:inputType="textPersonName"
+                    android:layout_width="wrap_content">
+                </EditText>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>
